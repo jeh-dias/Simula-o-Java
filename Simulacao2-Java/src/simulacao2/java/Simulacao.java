@@ -61,62 +61,54 @@ public class Simulacao {
         do {
             for (int i = 0; i < 5; i++) {
                 con = new Conexao();
-                // setando tempo de nova conexao
-                con.setTempoNovaConexao(con.poisson(mediaTempoDuracao, 1, mediaConexoes));
-                // setando tempo de duracao de conexao
-                con.setDuracaoConexao(con.exponencial(mediaConexoes) * (-1));
-
+                
                 conexoes.add(con);
-                tDecorrido += tempoServico;
 
                 // criando 50 pacotes por conexão
                 for (int j = 0; j < 50; j++) {
                     pacote = new Pacote();
                     pacote.setTamanho(225.28);
-                    tempoServico = pacote.getTamanho() / tamanhoLink;
-                    tDecorrido = tempoServico;
+                    tDecorrido = con.getTempoNovaConexao();
                     // tratando chegadas
-                    if (tDecorrido == tempoServico) {
+                    if (tDecorrido == con.getTempoNovaConexao()) {
                         System.out.println(" chegou");
-                        if (roteador.isEmpty()) {
-                            roteador.add(pacote);
-                            
-                        }else{
-                            tDecorrido += (-1.0 / tempoServico) * Math.log(aleatorio());
-                            tempoSimulacao++;
+                        if (!roteador.isEmpty()) {
+                            tempoServico = pacote.getTamanho() / tamanhoLink;
                         }
                         roteador.add(pacote);
+                        // setando tempo de nova conexao
+                        con.setTempoNovaConexao(con.poisson(mediaTempoDuracao, 1, mediaConexoes));
+                        
+                        // setando tempo de duracao de conexao
+                        con.setDuracaoConexao(con.exponencial(mediaConexoes) * (-1));       
                         
                         tempoGeraConexao = con.getTempoNovaConexao();
                         System.out.println("tempo gera conexao " + tempoGeraConexao);
                         
                         tempoDuraConexao = con.getDuracaoConexao();
                         System.out.println("tempo dura conexao " + tempoDuraConexao);
+                    // tratando saídas    
+                    }else{
+                            System.out.println(" saiu ");
+                            roteador.remove("0");
+                            if(roteador.isEmpty()){
+                                
+                                tDecorrido += (-1.0 / tempoServico) * Math.log(aleatorio());
+                                tempoSimulacao++;
+                            }else{
+                                tDecorrido = 0.0;
+                            }
+
                         
                         utilizacaoCalculada = tempoGeraConexao / tempoServico;
                         System.out.println(" tempo de serviço " + tempoServico);
                         System.out.println(" utilizacao calculada " + utilizacaoCalculada);
-
-                    // tratando saidas    
-                    } else {
-                        System.out.println(" saiu ");
-                        roteador.remove("0");
-                        if(roteador.isEmpty()){
-                            tDecorrido += (-1.0 / tempoServico) * Math.log(aleatorio());
-                        }else{
-                            tDecorrido = 0.0;
-                        }
-                    }
-
                 }
 
             }
+         }
 
-        } while (tempoSimulacao < 10.000);
-
-        //double taxaTotalPacotes = roteador. / 100.000;
-
-        System.out.println(" total roteador " + roteador.size());
+        } while (tDecorrido < 10.000);
         System.out.println(" conexoes " + conexoes.size());
 
         /* inicio trafego web
